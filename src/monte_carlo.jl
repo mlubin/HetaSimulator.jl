@@ -7,7 +7,6 @@ function mc(
   evt_save::Tuple{Bool,Bool}=(true,true),
   verbose=true,
   time_type=Float64,
-  evt_save=(true,true),
   termination=nothing,
   title=nothing,
   alg=DEFAULT_ALG,
