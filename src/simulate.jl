@@ -19,7 +19,7 @@ function sim(
   abstol=DEFAULT_SIMULATION_ABSTOL,
   kwargs...
 )
-  prob = build_ode_problem(condition, constants, saveat_measurements; time_type = time_type, termination=termination)
+  prob = build_ode_problem(condition, constants, saveat_measurements; evt_save=evt_save, time_type = time_type, termination=termination)
 
   sol = solve(prob, alg; reltol = reltol, abstol = abstol,
     save_start = false, save_end = false, save_everystep = false, kwargs...)

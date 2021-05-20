@@ -7,6 +7,7 @@ function mc(
   evt_save::Tuple{Bool,Bool}=(true,true),
   verbose=true,
   time_type=Float64,
+  evt_save=(true,true),
   termination=nothing,
   title=nothing,
   alg=DEFAULT_ALG,
@@ -17,7 +18,7 @@ function mc(
 ) where P<:Pair
   !has_saveat(cond) && error("Add saveat values to Condition in order to run Monte-Carlo simulations.")
 
-  prob0 = build_ode_problem(cond, Pair{Symbol,Float64}[], saveat_measurements; time_type = time_type, termination = termination)
+  prob0 = build_ode_problem(cond, Pair{Symbol,Float64}[], saveat_measurements; evt_save=evt_save, time_type = time_type, termination = termination)
   init_func = cond.model.init_func
   t = time_type[]
 
