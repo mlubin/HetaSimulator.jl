@@ -124,10 +124,11 @@ end
 
 ################################## Monte-Carlo Simulation ##############################
 
-struct MCResults{T,V,C} <: AbstractResults
+struct MCResults{T,V,S,C} <: AbstractResults
   title::Union{String,Nothing}
   t::T
   vals::V
+  status::S
   condition::C
 end
 

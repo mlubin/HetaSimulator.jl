@@ -38,7 +38,7 @@ function mc(
 
   function output_func(sol, i)
     i==num_iter && println(sol.prob.kwargs[:callback].discrete_callbacks[1].affect!.saved_values.t) # tofix
-    sim = sol.prob.kwargs[:callback].discrete_callbacks[1].affect!.saved_values
+    sim = (sol.prob.kwargs[:callback].discrete_callbacks[1].affect!.saved_values,sol.retcode)
     (sim, false)
   end
 
@@ -58,9 +58,7 @@ function mc(
     kwargs...
   )
 
-  #t = take!(r)
-
-  return MCResults(title,t,solution.u,cond)
+  return MCResults(title, t, [u[1] for u in solution.u], [u[2] for u in solution.u], cond)
 end
 
 function mc(
