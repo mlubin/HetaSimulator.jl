@@ -175,12 +175,11 @@ ens = EnsembleSummary(mcsim1;quantiles=[0.05,0.95])
 plot(ens)
 
 ################################## Monte-Carlo Parallel #####################
-#= 
-using Distributed
-addprocs(2)
+
+using HetaSimulator, Distributed
+addprocs(30)
 @everywhere using HetaSimulator
 
 mcscn1 = Scenario(model, (0., 200.), parameters = [:k1=>0.01], saveat = [50., 80., 150.]);
-mcsim0 = mc(mcscn1, [:k2=>Normal(1e-3,1e-4), :k3=>Normal(1e-4,1e-5)], 20)
-mcsim1 = mc(mcscn1, [:k2=>Normal(1e-3,1e-4), :k3=>Normal(1e-4,1e-5)], 150, parallel_type=EnsembleDistributed())
-=#
+mcsim0 = mc(mc_scn1, [:k2=>Normal(1e-3,1e-4), :k3=>Normal(1e-4,1e-5)], 20)
+mcsim1 = mc(mc_scn1, [:k2=>Normal(1e-3,1e-4), :k3=>Normal(1e-4,1e-5)], 150, alg=CVODE_BDF(; max_convergence_failures = 5), reltol=1e-5, abstol=1e-8, maxiters=Int(1e4), parallel_type=EnsembleDistributed(), verbose=true)

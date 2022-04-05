@@ -74,8 +74,9 @@ collect_saveat(saveat::AbstractRange{S}) where S<:Real = Float64.(saveat)
 function init_values(init_func, constants)
   u0, p0 = init_func(constants)
   lvcons = LVector(constants)
-  return (u0,Params{typeof(lvcons),typeof(p0)}(lvcons, p0))
+  return (u0, Params{typeof(lvcons),typeof(p0)}(lvcons, p0))
 end
+# NamedTuple{}(fill(typeof(3)[], length(p0)))
 
 function  update_init_values(prob, init_func, x)
   constants = merge(NamedTuple(prob.p.constants),x)

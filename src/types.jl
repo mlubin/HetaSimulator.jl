@@ -105,10 +105,20 @@ end
 
 ################################## Params ###########################################
 
+# idea remove statics and change parameters structure to
+# struct Params 
+#  cur
+#  cache 
+# end
+
 struct Params{C,S}
   constants::C 
   static::S
+#  cache::M
 end
+
+#static(p::Params) = p.static
+#cache(p::Params) = p.cache
 
 ################################## Measurement ###########################################
 
