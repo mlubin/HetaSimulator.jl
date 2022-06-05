@@ -53,7 +53,8 @@ end
 
 function evt_func_wrapper(integrator, evt_func, events_save, evt_name)
   evt_func(integrator)
-  push!(integrator.p.static_cache.idxs, integrator.saveiter)
+
+  push!(integrator.p.static_cache.idxs, length(integrator.sol.t))
   push!(integrator.p.static_cache.cache, copy(integrator.p.static))
   reset_dt!(integrator)
 end
