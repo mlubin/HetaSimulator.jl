@@ -8,6 +8,7 @@ module HetaSimulator
   using LabelledArrays
   using DataStructures
   using DiffEqBase
+  using SciMLBase
   @reexport using OrdinaryDiffEq
   @reexport using DiffEqBase.EnsembleAnalysis
   using Sundials
@@ -21,7 +22,7 @@ module HetaSimulator
   @reexport using Distributions
   using LinearAlgebra: pinv, diag
   using Distributed
-  using RecursiveArrayTools: vecvec_to_mat, VectorOfArray
+  import RecursiveArrayTools
   using ProgressMeter
   # measurements 
   using CSV
@@ -50,6 +51,7 @@ module HetaSimulator
   include("import_platform.jl")
   include("gsa.jl")
   include("save_as_heta.jl")
+  include("observed.jl")
 
   
   heta_update()
@@ -72,4 +74,5 @@ module HetaSimulator
   export gsa, pearson, partial, standard
   export save_as_heta
   export scale_params, unscale_params
+  export ODEProblemWithStaticCache, ODESolutionWithStaticCache
 end

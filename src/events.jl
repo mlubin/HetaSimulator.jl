@@ -30,7 +30,7 @@ function add_event(evt::TimeEvent, events_save::Tuple{Bool, Bool}=(true,true), e
         (u,t,integrator) -> t in tstops,
         (integrator) -> evt_func_wrapper(integrator, evt.affect_func, events_save, evt_name),
         initialize = init_time_event,
-        save_positions=(false,false)
+        save_positions=(true,true)
   )
 end
 
@@ -39,7 +39,7 @@ function add_event(evt::CEvent, events_save::Tuple{Bool, Bool}=(true,true), evt_
       evt.condition_func,
       (integrator) -> evt_func_wrapper(integrator, evt.affect_func, events_save, evt_name),
       (integrator) -> nothing,
-      save_positions=(false,false)
+      save_positions=(true,true)
   )
 end
 
@@ -47,17 +47,14 @@ function add_event(evt::StopEvent, events_save::Tuple{Bool, Bool}=(true,false), 
   DiscreteCallback(
     evt.condition_func,
     (integrator) -> evt_func_wrapper(integrator, terminate!, events_save, evt_name),
-    save_positions=(false,false)
+    save_positions=(true,true)
   )
 end
 
 function evt_func_wrapper(integrator, evt_func, events_save, evt_name)
-  # check saveat values before applying a callback
-  save_after_step!(integrator)
-  # save timepoint before and after applying a callback
-  first(events_save) && save_timepoint!(integrator, :ode_) #affect_func!(integrator, true)
   evt_func(integrator)
-  last(events_save) && save_timepoint!(integrator, evt_name)
+  push!(integrator.p.static_cache.idxs, integrator.saveiter)
+  push!(integrator.p.static_cache.cache, copy(integrator.p.static))
   reset_dt!(integrator)
 end
 

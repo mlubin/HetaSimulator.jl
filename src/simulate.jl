@@ -39,14 +39,16 @@ function sim(
   kwargs... # other solver arguments
 ) where P<:Pair
   
-  prob = !isempty(saveat) ? remake_saveat(scenario.prob, saveat) : scenario.prob 
-  prob = length(parameters_upd) > 0 ? update_init_values(prob, scenario.init_func, NamedTuple(parameters_upd)) : prob
-  sol = solve(prob, alg; reltol = reltol, abstol = abstol,
-    save_start = false, save_end = false, save_everystep = false, kwargs...)
-  params_names = Symbol[first(x) for x in parameters_upd]
-  return build_results(sol, scenario, params_names)
+  prob = length(parameters_upd) > 0 ? update_init_values(scenario.prob, scenario.init_func, NamedTuple(parameters_upd)) : scenario.prob
+  sol = solve(prob, alg; saveat, reltol, abstol, kwargs...)
+  push!(sol.prob.p.static_cache.idxs, length(sol.t))
+  push!(sol.prob.p.static_cache.cache, copy(sol.prob.p.static))
+  obs = observables(scenario)
+  out = !isnothing(obs) && !isempty(obs) ? RecursiveArrayTools.DiffEqArray(sol[obs], sol.t) : RecursiveArrayTools.DiffEqArray(sol.u, sol.t) 
+  return out
 end
 
+#=
 function build_results(sol::SciMLBase.AbstractODESolution, params_names::Vector{Symbol})
   params = if length(params_names) > 0 
     @LArray sol.prob.p.constants[params_names] Tuple(params_names)
@@ -58,7 +60,7 @@ function build_results(sol::SciMLBase.AbstractODESolution, params_names::Vector{
 end
 
 build_results(sol::SciMLBase.AbstractODESolution, scenario, params_names) = SimResult(build_results(sol, params_names), scenario)
-
+=#
 ### simulate scenario pairs
 
 """

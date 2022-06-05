@@ -49,11 +49,10 @@ function Scenario(
   prob = build_ode_problem(
     model,
     tspan;
-    observables_ = observables,
     kwargs...
   )
 
-  return Scenario(model.init_func, prob, measurements, tags, group)
+  return Scenario(model.init_func, prob, measurements, observables, tags, group)
 end
 
 # Scenario struct method

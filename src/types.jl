@@ -111,14 +111,12 @@ end
 #  cache 
 # end
 
-struct Params{C,S}
+struct Params{C,S,CA}
   constants::C 
   static::S
-#  cache::M
+  static_cache::CA
 end
 
-#static(p::Params) = p.static
-#cache(p::Params) = p.cache
 
 ################################## Measurement ###########################################
 
@@ -162,10 +160,11 @@ abstract type AbstractScenario end
 
   To get the internal properties use methods: `tspan(scenario)`, `parameters(scenario)`, `measurements(scenario)`
 """
-struct Scenario{F,P,M} <: AbstractScenario
+struct Scenario{F,P,M,O} <: AbstractScenario
   init_func::F
   prob::P
   measurements::M
+  observables::O
   tags::AbstractVector{Symbol}
   group::Union{Symbol,Nothing}
 end 
@@ -173,9 +172,9 @@ end
 tspan(scn::Scenario) = scn.prob.tspan
 parameters(scn::Scenario) = scn.prob.p.constants
 measurements(scn::Scenario) = scn.measurements
+observables(scn::Scenario) = scn.observables
 # events_active(scn::Scenario)
 # events_save(scn::Scenario)
-# observables(scn::Scenario)
 
 function Base.show(io::IO, mime::MIME"text/plain", scn::Scenario)
   parameters_str = print_lim(
