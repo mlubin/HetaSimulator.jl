@@ -44,7 +44,8 @@ function sim(
   push!(sol.prob.p.static_cache.idxs, length(sol.t))
   push!(sol.prob.p.static_cache.cache, copy(sol.prob.p.static))
   obs = observables(scenario)
-  out = !isnothing(obs) && !isempty(obs) ? RecursiveArrayTools.DiffEqArray(sol[obs], sol.t) : RecursiveArrayTools.DiffEqArray(sol.u, sol.t) 
+  #out = !isnothing(obs) && !isempty(obs) ? RecursiveArrayTools.DiffEqArray(sol[obs], sol.t) : RecursiveArrayTools.DiffEqArray(sol.u, sol.t) 
+  out = RecursiveArrayTools.DiffEqArray(sol.u, sol.t) 
   return out
 end
 
