@@ -32,7 +32,7 @@ Base.getindex(p::ParamsWithCache, ::Colon) = Params.((p.constants,), p.static_ca
 const ODEProblemWithStaticCache{uType,tType,isinplace,P,F,K,PT} = ODEProblem{uType,tType,isinplace,P,F,K,PT} where P<:ParamsWithCache
 const ODESolutionWithStaticCache{T,N,uType,uType2,EType,tType,rateType,P,A,IType,DE} = Union{
   OrdinaryDiffEq.ODECompositeSolution{T,N,uType,uType2,EType,tType,rateType,P,A,IType,DE},
-  SciMLBase.ODESolution{T,N,uType,uType2,DType,tType,rateType,P,A,IType,DE}} where P <: <:ODEProblemWithStaticCache
+  SciMLBase.ODESolution{T,N,uType,uType2,EType,tType,rateType,P,A,IType,DE}} where P <: <:ODEProblemWithStaticCache
 const DiffEqArrayWithStaticCache{T, N, A, B, C, D, E, F} = RecursiveArrayTools.DiffEqArray{T, N, A, B, C, D, E, F} where F<: Union{ParamsWithCache, Vector{P}} where P <: Params
 
 function RecursiveArrayTools.observed(A::DiffEqArrayWithStaticCache,sym,i::Int)
