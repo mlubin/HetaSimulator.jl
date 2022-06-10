@@ -40,11 +40,11 @@ function RecursiveArrayTools.observed(A::DiffEqArrayWithStaticCache,sym,i::Int)
 end
 
 function RecursiveArrayTools.observed(A::DiffEqArrayWithStaticCache,sym,i::AbstractArray{Int})
-  A.observed.((sym,),A.u[i],A.p[i],A.t[i])
+  [A.observed(sym,A.u[iⱼ],A.p[iⱼ],A.t[iⱼ]) for iⱼ in i]
 end
 
 function RecursiveArrayTools.observed(A::DiffEqArrayWithStaticCache,sym,::Colon)
-  A.observed.((sym,),A.u,A.p[:],A.t)
+  [A.observed(sym,A.u[iⱼ],A.p[iⱼ],A.t[iⱼ]) for iⱼ in eachindex(A.t)]
 end
 
 function SciMLBase.observed(A::ODESolutionWithStaticCache,sym,i::Int)
@@ -52,11 +52,11 @@ function SciMLBase.observed(A::ODESolutionWithStaticCache,sym,i::Int)
 end
 
 function SciMLBase.observed(A::ODESolutionWithStaticCache,sym,i::AbstractArray{Int})
-  SciMLBase.getobserved(A).((sym,),A.u[i],A.prob.p[i],A.t[i])
+  [SciMLBase.getobserved(A)(sym,A.u[iⱼ],A.prob.p[iⱼ],A.t[iⱼ]) for iⱼ in i]
 end
 
-function SciMLBase.observed(A::ODESolutionWithStaticCache,sym,i::Colon)
-  SciMLBase.getobserved(A).((sym,),A.u,A.prob.p[:],A.t)
+function SciMLBase.observed(A::ODESolutionWithStaticCache,sym,::Colon)
+  [SciMLBase.getobserved(A)(sym,A.u[iⱼ],A.prob.p[iⱼ],A.t[iⱼ]) for iⱼ in eachindex(A.t)]
 end
 
 #static(p::Params) = p.static
@@ -73,7 +73,7 @@ end
 =#
 
 # https://github.com/SciML/SciMLBase.jl/blob/0274b5f9f42acbc98cb4fc57bab997bddcb3050c/src/solutions/ode_solutions.jl#L43
-(sol::ODESolutionWithStaticCache)(t, ::Type{deriv}=Val{0}; idxs=nothing, continuity=:left) where {deriv} = sol(t, deriv, idxs, continuity)
+#(sol::ODESolutionWithStaticCache)(t, ::Type{deriv}=Val{0}; idxs=nothing, continuity=:left) where {deriv} = sol(t, deriv, idxs, continuity)
 
 function (sol::ODESolutionWithStaticCache)(t::Number, ::Type{deriv}, idxs, continuity) where {deriv}
   SciMLBase.issymbollike(idxs) || error("Incorrect specification of `idxs`")
@@ -111,19 +111,14 @@ function _augment(A::RecursiveArrayTools.DiffEqArray, sol::ODESolutionWithStatic
 end
 
 function static_interpolation(sol::ODESolutionWithStaticCache, t::Number, continuity)
+  i = searchsorted(sol.t, t)
   if continuity == :left
-    i = searchsortedfirst(sol.t, t)
+    return sol.prob.p[min(first(i), last(i))]
   else
-    i = searchsortedlast(sol.t, t)
+    return sol.prob.p[max(first(i), last(i))]
   end
-  return sol.prob.p[i]
 end
 
 function static_interpolation(sol::ODESolutionWithStaticCache, t::AbstractVector{<:Number}, continuity)
-  if continuity == :left
-    i = searchsortedfirst.((sol.t,), t)
-  else
-    i = searchsortedlast.((sol.t,), t)
-  end
-  return sol.prob.p[i]
+  [static_interpolation(sol, tᵢ, continuity) for tᵢ in t]
 end
