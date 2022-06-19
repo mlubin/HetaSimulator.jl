@@ -2,7 +2,7 @@ const DEFAULT_SIMULATION_RELTOL=1e-3
 const DEFAULT_SIMULATION_ABSTOL=1e-6
 const DEFAULT_ALG = AutoTsit5(Rosenbrock23())
 
-const EMPTY_PROBLEM = ODEProblem(() -> nothing, [0.0], (0.,1.))
+const EMPTY_PROBLEM = ODEProblem((du,u,p,t) -> nothing, [0.0], (0.,1.))
 
 ### simulate scenario
 
@@ -40,6 +40,13 @@ function sim(
 ) where P<:Pair
   
   prob = length(parameters_upd) > 0 ? update_init_values(scenario.prob, scenario.init_func, NamedTuple(parameters_upd)) : scenario.prob
+  if (typeof(prob) <: ODEProblemWithStaticCache) && !isempty(prob.p.static_cache.idxs) 
+    deleteat!(prob.p.static_cache.idxs, 1:length(prob.p.static_cache.idxs))
+    deleteat!(prob.p.static_cache.cache, 1:length(prob.p.static_cache.cache))
+    push!(prob.p.static_cache.idxs, 1)
+    push!(prob.p.static_cache.cache, copy(prob.p.static))
+  end
+  
   sol = solve(prob, alg; saveat, reltol, abstol, kwargs...)
   push!(sol.prob.p.static_cache.idxs, length(sol.t))
   push!(sol.prob.p.static_cache.cache, copy(sol.prob.p.static))

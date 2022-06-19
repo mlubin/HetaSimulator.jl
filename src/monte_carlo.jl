@@ -43,7 +43,7 @@ function mc(
   params::Vector{P},
   num_iter::Int;
   verbose=false,
-  progress_bar=false,
+  #progress_bar=false,
   alg=DEFAULT_ALG,
   reltol=DEFAULT_SIMULATION_RELTOL,
   abstol=DEFAULT_SIMULATION_ABSTOL,
@@ -55,23 +55,30 @@ function mc(
 ) where P<:Pair
 
   prob0 = scenario.prob
+  if (typeof(prob0) <: ODEProblemWithStaticCache) && !isempty(prob0.p.static_cache.idxs) 
+    deleteat!(prob0.p.static_cache.idxs, 1:length(prob0.p.static_cache.idxs))
+    deleteat!(prob0.p.static_cache.cache, 1:length(prob0.p.static_cache.cache))
+    push!(prob0.p.static_cache.idxs, 1)
+    push!(prob0.p.static_cache.cache, copy(prob0.p.static))
+  end
+
   init_func = scenario.init_func
   params_nt = NamedTuple(params)
 
   #(parallel_type == EnsembleSerial()) # tmp fix
-  p = Progress(num_iter, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, enabled = progress_bar)
+  #p = Progress(num_iter, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, enabled = progress_bar)
   
   function prob_func(prob,i,repeat)
     verbose && println("Processing iteration $i")
-    progress_bar && (parallel_type != EnsembleDistributed() ? next!(p) : put!(progch, true))
-    prob_i = !isempty(saveat) ? remake_saveat(prob, saveat) : prob
-    update_init_values(prob_i, init_func, generate_cons(params_nt,i))
+    #progress_bar && (parallel_type != EnsembleDistributed() ? next!(p) : put!(progch, true))
+    update_init_values(prob, init_func, generate_cons(params_nt,i))
   end
 
   params_names = collect(keys(params_nt))
   function _output(sol, i)
-    sim = build_results(sol, params_names)
-    (output_func(sim, i), false)
+      push!(sol.prob.p.static_cache.idxs, length(sol.t))
+      push!(sol.prob.p.static_cache.cache, copy(sol.prob.p.static))
+      (output_func(sol, i), false)
   end
 
   prob = EnsembleProblem(prob0;
@@ -80,6 +87,7 @@ function mc(
     reduction = reduction_func
   )
 
+  #=
   if progress_bar && (parallel_type == EnsembleDistributed())
     @sync begin
       @async while take!(progch)
@@ -99,18 +107,17 @@ function mc(
       end
     end
   else
+    =#
     solution = solve(prob, alg, parallel_type;
       trajectories = num_iter,
       reltol = reltol,
       abstol = abstol,
-      save_start = false,
-      save_end = false,
-      save_everystep = false,
+      saveat = saveat,
       kwargs...
     )
-  end
+  #end
 
-  return MCResult(solution.u, !isempty(saveat), scenario)
+  return solution
 end
 
 """
