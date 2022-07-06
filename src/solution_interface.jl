@@ -105,6 +105,13 @@ function DataFrame(res::Vector{Pair{Symbol,S}}; kwargs...) where S<:MCResult
   return vcat(df_vectors...; cols=:union)
 end
 
+
+function DataFrame(mcr::MCResult, metadf::DataFrame; kwargs...)
+  @assert length(mcr) == size(metadf)[1] "MCResult length is not equal to metadata DF"
+  df = DataFrame(mcr; kwargs...)
+  transform(df, :iter=>ByRow(x->metadf[x,:])=>names(metadf))
+end
+
 ############################ Save Result ########################################
 """
     save_results(filepath::String, sim::AbstractResult) 
